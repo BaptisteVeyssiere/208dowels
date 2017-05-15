@@ -1,0 +1,166 @@
+#!/usr/bin/ruby -w
+# coding: utf-8
+
+require 'csv'
+
+if ARGV[0] == "-h"
+  print "USAGE\n\t\t./208dowels O0 O1 O2 O3 O4 O5 O6 O7 08+\n\nDESCRIPTION\n\t\tOi\tsize of the observed class\n"
+  exit(0)
+end
+if ARGV.length != 9
+  print "Program needs 9 arguments: got #{ARGV.length}\n"
+  exit(84)
+end
+for i in 0..8
+  if ARGV[i] !~ /^[0-9]+$/
+    print "Invalid argument: #{ARGV[i]}\n"
+    exit(84)
+  end
+end
+$sum = 0
+for i in 0..8
+  $sum += ARGV[i].to_i
+end
+if $sum != 100
+  print "Invalid sum (must be equal to 100)\nSum = #{$sum}\n"
+  exit(84)
+end
+$array = Array.new
+$indice = Array.new
+for i in 0..8
+  if i == 0
+    $array.push(ARGV[i].to_i)
+    $indice.push(i.to_s)
+  elsif i == 8
+    if ARGV[i].to_i < 10
+      $array[$array.length-1] += ARGV[i].to_i
+      if $indice[$indice.length-1].include? "-"
+        $indice[$indice.length-1] = ($indice[$indice.length-1])[0..-3]
+      end
+      $indice[$indice.length-1] += '+'
+    else
+      $array.push(ARGV[i].to_i)
+      $indice.push(i.to_s + '+')
+    end
+  else
+    if ARGV[i].to_i < 10
+      if ARGV[i-1].to_i <= ARGV[i+1].to_i
+        $array[$array.length-1] += ARGV[i].to_i
+        if $indice[$indice.length-1].include? "-"
+          $indice[$indice.length-1] = ($indice[$indice.length-1])[0..-3]
+        end
+        $indice[$indice.length-1] += "-" + i.to_s
+      else
+        $array.push(ARGV[i].to_i)
+        $indice.push(i.to_s)
+      end
+    else
+      if $array[$array.length-1] >= 10
+        $array.push(ARGV[i].to_i)
+        $indice.push(i.to_s)
+      else
+        $array[$array.length-1] += ARGV[i].to_i
+        if $indice[$indice.length-1].include? "-"
+          $indice[$indice.length-1] = ($indice[$indice.length-1])[0..-3]
+        end
+        $indice[$indice.length-1] += '-' + i.to_s
+      end
+    end
+  end
+end
+print "   x  |"
+for i in 0..$indice.length-1
+  $before = (6 - $indice[i].length) / 2 + (6 - $indice[i].length) % 2
+  $after = (6 - $indice[i].length) / 2
+  print " " * $before + "#{$indice[i]}" + " " * $after + "|"
+end
+print "  total\n  Ox  |"
+for i in 0..$array.length-1
+  $before = (6 - $array[i].digits.length) / 2 + (6 - $array[i].digits.length) % 2
+  $after = (6 - $array[i].digits.length) / 2
+  print " " * $before + "#{$array[i]}" + " " * $after + "|"
+end
+print "   100\n"
+$p = 0
+for i in 1..8
+  $p += (i.to_f * ARGV[i].to_f) / 10000.0
+end
+$t = Array.new
+$x = 0
+for i in 0..7
+  $nf = (1..100).reduce(1, :*)
+  $nrf = (1..100-i).reduce(1, :*)
+  $rf = (1..i).reduce(1, :*)
+  $ncr = ($nf.to_f / $nrf.to_f) / $rf.to_f
+  $proba = $ncr * ($p.to_f ** i) * ((1.0 - $p.to_f) ** (100 - i))
+  $proba *= 100
+  if $indice[$x].to_i == i
+    $t.push($proba)
+    $x += 1
+  else
+    $t[$t.length-1] += $proba;
+  end
+end
+$proba = 100.0;
+for i in 0..$t.length-1
+  $proba -= $t[i]
+end
+if $indice[$x].to_i == 8
+    $t.push($proba)
+    $x += 1
+else
+  $t[$t.length-1] += $proba;
+end
+print "  Tx  |"
+for i in 0..$t.length-1
+  $before = (6 - $t[i].round(1).to_s.split("").size) / 2 + (6 - $t[i].round(1).to_s.split("").size) % 2
+  $after = (6 - $t[i].round(1).to_s.split("").size) / 2
+  print " " * $before + "#{$t[i].round(1)}" + " " * $after + "|"
+end
+print "   100\ndistribution:\t\t\tB(100, #{$p.round(4)})\n"
+$s = 0
+for k in 0..$array.length-1
+  if $t[k] == 0
+    break
+  end
+  $s = $s + (($array[k] - $t[k]) ** 2) / $t[k]
+end
+printf("sum of the square differences:\t%.3f\n", $s)
+$degree = $array.length - 2
+print "freedom degrees:\t\t#{$degree}\n"
+$matrice = [
+  [0.00, 0.02, 0.06, 0.15, 0.27, 0.45, 0.71, 1.07, 1.64, 2.71, 3.84, 5.41, 6.63],
+  [0.02, 0.21, 0.45, 0.71, 1.02, 1.39, 1.83, 2.41, 3.22, 4.61, 5.99, 7.82, 9.21],
+  [0.11, 0.58, 1.01, 1.42, 1.87, 2.37, 2.95, 3.66, 4.64, 6.25, 7.81, 9.84, 11.35],
+  [0.30, 1.06, 1.65, 2.19, 2.75, 3.36, 4.04, 4.88, 5.99, 7.78, 9.49, 11.67, 13.28],
+  [0.55, 1.61, 2.34, 3.00, 3.66, 4.35, 5.13, 6.06, 7.29, 9.24, 11.07, 13.33, 15.01],
+  [0.70, 2.20, 3.07, 3.83, 4.57, 5.35, 6.21, 7.23, 8.56, 10.64, 12.59, 15.03, 16.81],
+  [1.24, 2.83, 3.82, 4.67, 5.49, 6.35, 7.28, 8.38, 9.80, 12.02, 14.07, 16.62, 18.48]
+]
+$line = $matrice[$degree-1]
+for i in 0..$line.length-1
+  if $line[i] > $s
+    print "fit validity:\t\t\t"
+    if i == 0
+      print "P>99%\n"
+    elsif i == $line.length-1
+      print "P<1%\n"
+    else
+      if i == 1
+        $min = "90%"
+        $max = "99%"
+      elsif i == $line.length-2
+        $min = "1%"
+        $max = "10%"
+      else
+        $max = (100 - (i - 1) * 10).to_s + "%"
+        $min = (100 - i * 10).to_s + "%"
+        print "#{$min}<P<#{$max}\n"
+      end
+    end
+    break
+  elsif $line.length-1 == i
+    print "fit validity:\t\t\tP<1%\n"
+  end
+end
+exit(0)
