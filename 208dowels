@@ -26,6 +26,7 @@ if $sum != 100
   exit(84)
 end
 print ARGV
+exit(0)
 $array = Array.new
 $indice = Array.new
 for i in 0..8
@@ -118,7 +119,7 @@ for i in 0..$t.length-1
   $after = (6 - $t[i].round(1).to_s.split("").size) / 2
   print " " * $before + "#{$t[i].round(1)}" + " " * $after + "|"
 end
-print "   100\ndistribution:\t\t\tB(100,#{$p.round(4)})\n"
+print "   100\ndistribution:\t\t\tB(100, #{$p.round(4)})\n"
 $s = 0
 for k in 0..$array.length-1
   if $t[k] == 0
