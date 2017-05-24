@@ -25,6 +25,7 @@ if $sum != 100
   print "Invalid sum (must be equal to 100)\nSum = #{$sum}\n"
   exit(84)
 end
+print "#{ARGV}\n#{ARGV}\n"
 $array = Array.new
 $indice = Array.new
 for i in 0..8
