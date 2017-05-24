@@ -166,3 +166,4 @@ for i in 0..$line.length-1
     print "fit validity:\t\t\tP<1%\n"
   end
 end
+exit(0)
