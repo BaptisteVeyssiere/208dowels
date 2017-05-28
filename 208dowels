@@ -128,7 +128,6 @@ end
 printf("sum of the square differences:\t%.3f\n", $s)
 $degree = $array.length - 2
 print "freedom degrees:\t\t#{$degree}\n"
-exit(0)
 $matrice = [
   [0.00, 0.02, 0.06, 0.15, 0.27, 0.45, 0.71, 1.07, 1.64, 2.71, 3.84, 5.41, 6.63],
   [0.02, 0.21, 0.45, 0.71, 1.02, 1.39, 1.83, 2.41, 3.22, 4.61, 5.99, 7.82, 9.21],
